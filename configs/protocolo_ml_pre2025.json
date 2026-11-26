@@ -1,0 +1,60 @@
+{
+  "version": "pre2025_v1",
+  "entrenamiento": "2019-2024",
+  "prueba_reservada": 2025,
+  "muestra_principal": "estandar",
+  "objetivo": "objetivo_ml",
+  "clase_positiva": "tenue",
+  "limite_brillante": -0.89,
+  "limite_tenue": -0.07,
+  "modelo_principal": "local_cuadratico_diagonal",
+  "modelo_control": "control",
+  "modelo_alternativo": "pca_2_cuadratico_diagonal",
+  "variables_fase": [
+    "delta_sol_lon_deg"
+  ],
+  "grado_fase": 2,
+  "variables_calidad": [
+    "Qc (deg)",
+    "MedianFitErr (arcsec)",
+    "numero_estaciones",
+    "sigma_radiante_aprox",
+    "Vgeo_sigma_modelo"
+  ],
+  "variables_cinematica": [
+    "delta_v_paralela_km_s",
+    "delta_v_lambda_km_s",
+    "delta_v_beta_km_s"
+  ],
+  "regresion": {
+    "C": 1.0,
+    "solver": "lbfgs",
+    "max_iter": 5000
+  },
+  "umbral_clasificacion": 0.5,
+  "metrica_principal": "roc_auc",
+  "metricas_secundarias": [
+    "average_precision",
+    "exactitud_balanceada"
+  ],
+  "validacion_interna": "temporal_creciente_condicional",
+  "evaluacion_estricta": "subconjunto_del_modelo_estandar",
+  "ajustar_pca_con": "todas_las_trayectorias_elegibles_del_entrenamiento",
+  "numero_pc_alternativa": 2,
+  "reajustar_con_2025": false,
+  "sensibilidad_fotometrica": {
+    "tipo": "exclusion_de_extremos_en_evaluacion",
+    "variable": "magnitud_analisis",
+    "percentil": 0.01,
+    "poblacion_para_corte": "brillantes_2019_2024",
+    "corte": -3.3701,
+    "excluidos_en_desarrollo": 43,
+    "reentrenamiento": false
+  },
+  "filas_entrenamiento_ml": 8632,
+  "filas_ajuste_pca": 12904,
+  "transformacion_cinematica": "componentes locales, cuadrados y StandardScaler",
+  "transformacion_pca_alternativa": "PCA ajustado con todas las trayectorias elegibles de 2019-2024; utilizar PC1 y PC2",
+  "archivo_modelos": "reports\\models\\modelos_pre2025.joblib",
+  "sha256_modelos": "44bf767d6b0a803d44b9ca04a6a74acfc60004db050ccc83cd5cb92c6b58d78e"
+}
