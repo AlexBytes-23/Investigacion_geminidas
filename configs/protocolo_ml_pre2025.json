@@ -37,7 +37,20 @@
     "average_precision",
     "exactitud_balanceada"
   ],
-  "validacion_interna": "temporal_creciente_condicional",
+  "validacion_interna": {
+    "tipo": "temporal_creciente_condicional",
+    "anios_validacion": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "centro_fisico": "fijado en notebook 04 con 2019-2024",
+    "limites_clase": "fijados en notebook 04 con 2019-2024",
+    "ajuste_por_pliegue": "StandardScaler, PCA cuando corresponde y regresion logistica ajustados solo con anos anteriores",
+    "nota": "No es una validacion end-to-end del centro fisico ni de la generacion de etiquetas."
+  },
   "evaluacion_estricta": "subconjunto_del_modelo_estandar",
   "ajustar_pca_con": "todas_las_trayectorias_elegibles_del_entrenamiento",
   "numero_pc_alternativa": 2,
@@ -55,6 +68,6 @@
   "filas_ajuste_pca": 12904,
   "transformacion_cinematica": "componentes locales, cuadrados y StandardScaler",
   "transformacion_pca_alternativa": "PCA ajustado con todas las trayectorias elegibles de 2019-2024; utilizar PC1 y PC2",
-  "archivo_modelos": "reports\\models\\modelos_pre2025.joblib",
-  "sha256_modelos": "44bf767d6b0a803d44b9ca04a6a74acfc60004db050ccc83cd5cb92c6b58d78e"
+  "archivo_modelos": "reports/models/modelos_pre2025.joblib",
+  "sha256_modelos": "92dadd6faf1b2d0f50034a23c9a253999686e33ad847f64750771818a532ad1a"
 }

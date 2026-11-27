@@ -1,44 +1,48 @@
-# Brillo, radiante y velocidad de las Gemínidas
+# Brillo y estructura residual de las Gemínidas
 
-Proyecto F1009 basado en trayectorias de la **Global Meteor Network (GMN)** de diciembre de 2019 a 2025.
+Análisis físico, análisis de componentes principales (PCA) y modelado predictivo del brillo observado de meteoros Gemínidas utilizando datos de **Global Meteor Network (GMN)** de diciembre de 2019 a 2025.
 
-El proyecto estudia cómo se relaciona el brillo observado de las Gemínidas con su estructura angular y cinemática residual. El análisis incluye preparación física de las trayectorias, PCA, modelos de clasificación y una evaluación temporal con 2025.
+El proyecto estudia si la dispersión angular del radiante y la cinemática residual contienen información asociada con el brillo observado, después de corregir la evolución temporal de la lluvia y considerar la calidad de las observaciones.
 
-> **Estado actual:** el repositorio está en auditoría final. Los notebooks 01–03 ya se están limpiando para ejecución reproducible; 04–07 todavía deben pasar la misma revisión. Para probar la instalación y el flujo de datos, por ahora se recomienda ejecutar 01 → 02 → 03.
+## Estado del proyecto
 
----
+El pipeline principal está compuesto por siete notebooks auditados para ejecutarse secuencialmente:
 
-## 1. Qué necesitas
+```text
+01 → 02 → 03 → 04 → 05 → 06 → 07
+```
 
-Para trabajar con el repositorio se recomienda:
-
-- Git.
-- `uv` para instalar Python y las dependencias.
-- Un editor con soporte para Jupyter, como VS Code, o Jupyter Lab.
-
-No es necesario instalar Python manualmente si se usa `uv`: `uv` puede instalar Python 3.13 para el proyecto.
-
-El proyecto utiliza el entorno definido en:
-
-- `pyproject.toml`
-- `uv.lock`
-
-No instales las librerías una por una con `pip` salvo que estés modificando deliberadamente el entorno del proyecto.
+Los archivos originales de datos, las bases procesadas y los resultados generados no se almacenan en Git. Se reconstruyen localmente mediante los notebooks.
 
 ---
 
-## 2. Obtener el repositorio
+## 1. Requisitos
 
-### Con Git
+Se recomienda tener instalado:
+
+- Git
+- `uv`
+- VS Code con soporte para Jupyter, o Jupyter Lab
+
+El proyecto utiliza **Python 3.13**.
+
+Las dependencias están definidas en:
+
+```text
+pyproject.toml
+uv.lock
+```
+
+No es necesario instalar manualmente cada librería.
+
+---
+
+## 2. Clonar el repositorio
 
 ```bash
 git clone https://github.com/AlexBytes-23/Investigacion_geminidas.git
 cd Investigacion_geminidas
 ```
-
-También se puede descargar el repositorio como ZIP desde GitHub y descomprimirlo en una carpeta local.
-
-Conviene trabajar en una carpeta local normal, por ejemplo `Documents/` o `Proyectos/`. Evita mover los notebooks fuera del repositorio porque las rutas del proyecto están diseñadas para trabajar con esta estructura.
 
 ---
 
@@ -50,21 +54,13 @@ Conviene trabajar en una carpeta local normal, por ejemplo `Documents/` o `Proye
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Cierra y vuelve a abrir la terminal si `uv` no aparece inmediatamente.
-
-Comprueba la instalación:
-
-```powershell
-uv --version
-```
-
 ### macOS / Linux
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Después:
+Comprobar la instalación:
 
 ```bash
 uv --version
@@ -72,47 +68,46 @@ uv --version
 
 ---
 
-## 4. Crear el entorno del proyecto
+## 4. Preparar el entorno
 
 Desde la raíz del repositorio:
 
 ```bash
 uv python install 3.13
-uv venv --python 3.13
 uv sync --frozen
 ```
 
-Esto crea el entorno virtual del proyecto en:
+El entorno virtual queda en:
 
 ```text
 .venv/
 ```
 
-Para comprobar que las librerías principales se importan correctamente:
+Comprobar que las dependencias principales funcionan:
 
 ```bash
 uv run python -c "import numpy, pandas, pyarrow, sklearn, statsmodels, matplotlib, joblib; print('Entorno OK')"
 ```
 
-Si aparece:
+Comprobar la versión de Python:
 
-```text
-Entorno OK
+```bash
+uv run python --version
 ```
 
-el entorno básico está listo.
+El proyecto está preparado para Python 3.13.
 
 ---
 
-## 5. Descargar los datos de GMN
+## 5. Descargar los datos originales de GMN
 
-Los archivos de datos originales **no se guardan en Git** porque son grandes.
+Los archivos originales no se almacenan en Git debido a su tamaño.
 
 Fuente oficial:
 
 https://globalmeteornetwork.org/data/traj_summary_data/monthly/
 
-Descarga los siguientes siete archivos sin cambiarles el nombre:
+Descargar los siguientes siete archivos **sin cambiar sus nombres**:
 
 ```text
 traj_summary_monthly_201912.txt
@@ -124,76 +119,54 @@ traj_summary_monthly_202412.txt
 traj_summary_monthly_202512.txt
 ```
 
-Como referencia, los archivos publicados actualmente tienen tamaños aproximados de 10, 16, 29, 41, 60, 79 y 105 MB, respectivamente. Los tamaños pueden cambiar si GMN actualiza los archivos históricos.
+Colocarlos en:
 
-Crea esta carpeta dentro del repositorio:
+```text
+data/raw/
+```
+
+La estructura debe verse así:
 
 ```text
 data/
-└── raw/
+├── raw/
+│   ├── traj_summary_monthly_201912.txt
+│   ├── traj_summary_monthly_202012.txt
+│   ├── traj_summary_monthly_202112.txt
+│   ├── traj_summary_monthly_202212.txt
+│   ├── traj_summary_monthly_202312.txt
+│   ├── traj_summary_monthly_202412.txt
+│   └── traj_summary_monthly_202512.txt
+├── interim/
+└── processed/
 ```
 
-y coloca ahí los siete archivos:
+### Integridad de los datos
+
+GMN puede actualizar archivos históricos.
+
+El archivo:
 
 ```text
-Investigacion_geminidas/
-├── data/
-│   └── raw/
-│       ├── traj_summary_monthly_201912.txt
-│       ├── traj_summary_monthly_202012.txt
-│       ├── traj_summary_monthly_202112.txt
-│       ├── traj_summary_monthly_202212.txt
-│       ├── traj_summary_monthly_202312.txt
-│       ├── traj_summary_monthly_202412.txt
-│       └── traj_summary_monthly_202512.txt
-├── notebooks/
-├── reports/
-├── src/
-├── pyproject.toml
-└── uv.lock
+references/manifiesto_datos_gmn.csv
 ```
 
-### Nota de reproducibilidad
+contiene el nombre, tamaño y SHA-256 de los siete archivos utilizados en la ejecución auditada del proyecto.
 
-GMN puede actualizar archivos históricos. Por eso una descarga nueva permite probar el pipeline, pero no garantiza por sí sola obtener exactamente los mismos conteos y resultados de una ejecución anterior.
-
-Antes de cerrar la versión final del proyecto se añadirá un manifiesto de integridad con los archivos o huellas SHA-256 correspondientes al conjunto utilizado para los resultados definitivos.
+Una descarga posterior puede permitir ejecutar correctamente el pipeline sin ser necesariamente idéntica byte por byte a la utilizada para obtener los resultados originales.
 
 ---
 
-## 6. Abrir los notebooks
+## 6. Ejecutar los notebooks
 
-### Opción A: VS Code
+Los notebooks deben ejecutarse en orden.
 
-Abre **la carpeta completa del repositorio**, no un notebook aislado.
+Para una ejecución reproducible:
 
-En VS Code selecciona como kernel de Jupyter el Python del entorno `.venv`.
-
-En Windows normalmente será:
-
-```text
-.venv\Scripts\python.exe
-```
-
-En macOS / Linux:
-
-```text
-.venv/bin/python
-```
-
-### Opción B: Jupyter Lab
-
-Desde la raíz del repositorio:
-
-```bash
-uv run jupyter lab
-```
-
----
-
-## 7. Orden de los notebooks
-
-El proyecto está organizado en siete notebooks.
+1. Seleccionar como kernel el Python de `.venv`.
+2. Reiniciar el kernel.
+3. Ejecutar todas las celdas desde el inicio.
+4. No continuar al siguiente notebook si aparece un error.
 
 ### 01 — Auditoría inicial y criterios de calidad
 
@@ -201,9 +174,9 @@ El proyecto está organizado en siete notebooks.
 notebooks/01_auditoria_y_limpieza.ipynb
 ```
 
-Usa diciembre de 2019 como caso diagnóstico para entender la estructura de GMN, revisar calidad y estudiar los criterios que se aplicarán después.
+Examina diciembre de 2019 para comprender la estructura de los datos GMN, revisar incertidumbres, detectar problemas de calidad y justificar los criterios utilizados posteriormente.
 
-No genera un archivo necesario para el notebook 02. Su papel es metodológico y diagnóstico.
+Es un notebook diagnóstico: no produce directamente la entrada del notebook 02.
 
 ### 02 — Integración multianual
 
@@ -211,13 +184,13 @@ No genera un archivo necesario para el notebook 02. Su papel es metodológico y 
 notebooks/02_integracion_multianual.ipynb
 ```
 
-Carga los siete diciembres de 2019–2025, homogeneiza los datos, aplica los criterios de calidad y genera:
+Carga y homogeneiza los archivos de diciembre de 2019 a 2025.
+
+Genera la base multianual:
 
 ```text
 data/interim/gmn_diciembre_2019_2025.parquet
 ```
-
-El notebook 03 depende de este archivo.
 
 ### 03 — Preparación física de las Gemínidas
 
@@ -225,9 +198,20 @@ El notebook 03 depende de este archivo.
 notebooks/03_preparacion_fisica_geminidas.ipynb
 ```
 
-Selecciona las Gemínidas, construye coordenadas relativas al Sol, estudia la deriva del radiante y de la velocidad, calcula el centro descriptivo y los residuos físicos, prepara la fotometría y analiza posibles sesgos observacionales.
+Selecciona las Gemínidas y desarrolla el análisis físico descriptivo.
 
-Genera la carpeta:
+Incluye:
+
+- coordenadas relativas al Sol;
+- fase solar;
+- deriva del radiante y de la velocidad;
+- construcción del centro descriptivo;
+- residuos angulares;
+- análisis de la fotometría;
+- calidad observacional;
+- relación entre brillo y dispersión.
+
+Genera:
 
 ```text
 data/processed/geminidas_v1/
@@ -239,7 +223,22 @@ data/processed/geminidas_v1/
 notebooks/04_preparacion_modelado_pca_ml.ipynb
 ```
 
-Separa 2019–2024 de 2025, aprende una referencia física exclusivamente con 2019–2024 y construye las componentes locales de velocidad residual.
+Separa temporalmente los datos:
+
+```text
+2019–2024 → desarrollo
+2025      → prueba
+```
+
+La referencia física utilizada para el modelado se ajusta únicamente con 2019–2024.
+
+Después se construye el vector residual de velocidad y se proyecta sobre una base física local formada por tres componentes:
+
+```text
+paralela
+lambda
+beta
+```
 
 Genera:
 
@@ -247,21 +246,50 @@ Genera:
 data/processed/geminidas_modelado_v2/
 ```
 
-### 05 — PCA
+con las bases de entrenamiento y prueba.
+
+### 05 — Análisis de componentes principales
 
 ```text
 notebooks/05_pca.ipynb
 ```
 
-Ajusta el PCA con las trayectorias de entrenamiento y describe cómo se organiza la variación de las tres componentes de velocidad residual.
+Ajusta un PCA utilizando las tres componentes locales de velocidad residual de 2019–2024.
 
-### 06 — Modelos de clasificación
+El brillo no interviene en la construcción de los ejes PCA. Después del ajuste se compara cómo se distribuyen los distintos grupos de brillo sobre esos mismos ejes.
+
+Las tablas y figuras generadas se guardan en:
+
+```text
+reports/tables/
+reports/figures/
+```
+
+### 06 — Desarrollo y selección de modelos
 
 ```text
 notebooks/06_modelo_ml_geminidas.ipynb
 ```
 
-Compara modelos de control y modelos con información cinemática usando validación temporal interna sobre 2019–2024. Después ajusta y guarda los modelos finales previos a 2025.
+Utiliza únicamente información de 2019–2024.
+
+Compara siete modelos mediante validación temporal creciente, incluyendo:
+
+- modelo de control;
+- cinemática local lineal;
+- cinemática local cuadrática;
+- modelos reducidos mediante PCA.
+
+Después selecciona y ajusta los modelos finales con todo el periodo 2019–2024.
+
+Genera:
+
+```text
+configs/protocolo_ml_pre2025.json
+reports/models/modelos_pre2025.joblib
+```
+
+El protocolo registra las decisiones metodológicas previas a la evaluación de 2025 e incluye la huella SHA-256 del archivo de modelos.
 
 ### 07 — Evaluación temporal de 2025
 
@@ -269,125 +297,139 @@ Compara modelos de control y modelos con información cinemática usando validac
 notebooks/07_evaluacion_2025.ipynb
 ```
 
-Carga los modelos congelados y evalúa su rendimiento sobre 2025. Guarda predicciones, métricas y figuras.
+Carga el protocolo y los modelos congelados y evalúa la partición reservada de 2025.
+
+No reajusta modelos ni transformaciones utilizando 2025.
+
+Calcula:
+
+- ROC-AUC;
+- Average Precision;
+- exactitud balanceada;
+- análisis de sensibilidad;
+- matrices de confusión;
+- bootstrap pareado de las diferencias;
+- dependencia temporal por noche;
+- coeficientes del modelo principal.
+
+También genera las figuras finales de evaluación.
 
 ---
 
-## 8. Flujo de archivos
+## 7. Flujo principal de datos
 
 ```text
-GMN 2019–2025
-      │
-      ▼
+Archivos GMN 2019–2025
+        │
+        ▼
 data/raw/
-      │
-      ▼
-02_integracion_multianual
-      │
-      ▼
+        │
+        ▼
+02 Integración multianual
+        │
+        ▼
 data/interim/gmn_diciembre_2019_2025.parquet
-      │
-      ▼
-03_preparacion_fisica_geminidas
-      │
-      ▼
+        │
+        ▼
+03 Preparación física
+        │
+        ▼
 data/processed/geminidas_v1/
-      │
-      ▼
-04_preparacion_modelado_pca_ml
-      │
-      ▼
+        │
+        ▼
+04 Preparación de modelado
+        │
+        ▼
 data/processed/geminidas_modelado_v2/
-      │
-      ├──────────────► 05_pca
-      │
-      └──────────────► 06_modelo_ml_geminidas
-                              │
-                              ▼
-                    modelos pre-2025
-                              │
-                              ▼
-                    07_evaluacion_2025
+        │
+        ├──────────► 05 PCA
+        │
+        └──────────► 06 Desarrollo ML
+                          │
+                          ▼
+                   modelos pre-2025
+                          │
+                          ▼
+                   07 Evaluación 2025
 ```
 
-El notebook 01 queda al inicio porque documenta y justifica la preparación, aunque no produce directamente el archivo de entrada del 02.
+El notebook 01 aparece al inicio porque documenta y justifica los criterios utilizados posteriormente, aunque no genera directamente la entrada del notebook 02.
 
 ---
 
-## 9. Primera prueba recomendada
+## 8. Resultados generados
 
-Mientras continúa la auditoría final del repositorio, prueba primero:
-
-```text
-01 → 02 → 03
-```
-
-Para cada notebook:
-
-1. Reinicia el kernel.
-2. Ejecuta **Run All** desde la primera celda.
-3. No ejecutes celdas fuera de orden.
-4. Si aparece un error, no continúes con el siguiente notebook.
-5. Conserva el mensaje completo del error.
-
-Después del notebook 02 debe existir:
+Los productos del análisis se escriben localmente en:
 
 ```text
-data/interim/gmn_diciembre_2019_2025.parquet
+reports/
+├── figures/
+├── models/
+└── tables/
 ```
 
-Después del notebook 03 debe existir:
+Estos archivos no se almacenan normalmente en Git porque pueden regenerarse ejecutando el pipeline.
 
-```text
-data/processed/geminidas_v1/
-```
+Entre los productos se encuentran:
 
-Cuando 04–07 terminen su auditoría, esta misma prueba se ampliará a la cadena completa.
+- parámetros y puntuaciones del PCA;
+- tablas de validación interna;
+- estabilidad de coeficientes;
+- predicciones individuales de 2025;
+- métricas externas;
+- intervalos bootstrap;
+- matrices de confusión;
+- curvas ROC;
+- curvas precisión–exhaustividad;
+- manifiestos de integridad.
 
 ---
 
-## 10. Carpetas principales
+## 9. Estructura del repositorio
 
 ```text
-configs/       configuración metodológica
-data/raw/      datos originales descargados de GMN
-data/interim/  productos intermedios
+configs/        configuración metodológica
+data/raw/       archivos originales de GMN
+data/interim/   productos intermedios
 data/processed/ bases derivadas del proyecto
-notebooks/     análisis principal
-references/    documentación de las variables GMN
-reports/       tablas, figuras y modelos generados
-src/           funciones reutilizables
+notebooks/      pipeline principal 01–07
+references/     documentación y manifiestos de datos
+reports/        resultados generados
+src/            funciones reutilizables
 ```
 
-Los directorios de datos están excluidos de Git mediante `.gitignore`.
+Los datos y resultados generados están excluidos mediante `.gitignore`.
 
 ---
 
-## 11. Qué no hacer
+## 10. Reproducibilidad
 
-- No renombres los archivos mensuales de GMN.
-- No combines manualmente entrenamiento y 2025 para ajustar modelos.
-- No ejecutes los notebooks en orden arbitrario.
-- No sobrescribas los archivos originales en `data/raw/`.
-- No uses `pip install` para cambiar dependencias sin actualizar deliberadamente `pyproject.toml` y `uv.lock`.
-- No interpretes los archivos guardados en `reports/` como entradas originales: son productos del análisis.
+Para comprobar el pipeline desde una instalación nueva:
+
+1. Clonar el repositorio.
+2. Ejecutar `uv sync --frozen`.
+3. Colocar únicamente los siete archivos originales de GMN en `data/raw/`.
+4. Verificar, si se desea una reproducción exacta, sus SHA-256 contra `references/manifiesto_datos_gmn.csv`.
+5. Ejecutar los notebooks 01 → 07 en orden.
+
+Durante esta prueba no deben reutilizarse bases procesadas, modelos ni resultados obtenidos en otra instalación.
 
 ---
 
-## 12. Fuente de los datos
+## 11. Fuente de los datos
 
 Global Meteor Network:
 
 https://globalmeteornetwork.org/
 
-Datos mensuales de trayectorias:
+Archivos mensuales de trayectorias:
 
 https://globalmeteornetwork.org/data/traj_summary_data/monthly/
 
-Descripción de columnas:
+Descripción de las columnas utilizadas:
 
 ```text
 references/GMN_orbit_data_columns.pdf
 ```
 
-Los datos orbitales de GMN se publican bajo licencia CC BY 4.0. Debe citarse la fuente correspondiente en cualquier trabajo derivado.
+Los datos de Global Meteor Network deben citarse conforme a las condiciones de atribución correspondientes.
