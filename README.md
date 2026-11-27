@@ -1,344 +1,435 @@
-# Análisis físico y estadístico de las Gemínidas
+# Brillo y estructura residual de las Gemínidas
 
-Este repositorio contiene el procesamiento y análisis de observaciones de meteoros Gemínidas registradas por la **Global Meteor Network (GMN)** entre 2019 y 2025.
+Análisis físico, análisis de componentes principales (PCA) y modelado predictivo del brillo observado de meteoros Gemínidas utilizando datos de **Global Meteor Network (GMN)** de diciembre de 2019 a 2025.
 
-El proyecto estudia la asociación entre el brillo observado de los meteoros y la estructura residual de la lluvia. Esta estructura se describe mediante la separación angular respecto al radiante esperado y las desviaciones del vector de velocidad geocéntrica.
-
-## Datos utilizados
-
-Cada fila de la base representa una trayectoria de meteoro reconstruida a partir de observaciones realizadas desde varias estaciones.
-
-Los archivos de GMN contienen, entre otras variables:
-
-- Fecha y hora de observación.
-- Longitud solar.
-- Clasificación de la lluvia de meteoros.
-- Coordenadas del radiante geocéntrico.
-- Velocidad geocéntrica.
-- Incertidumbres de posición y velocidad.
-- Magnitud absoluta de pico.
-- Altura del máximo de brillo.
-- Número y nombres de las estaciones participantes.
-- Indicadores de calidad geométrica y del ajuste.
-
-La magnitud astronómica utiliza una escala inversa: los valores más negativos corresponden a meteoros más brillantes.
-
-Los datos originales se conservan sin modificaciones. Las correcciones, selecciones y variables derivadas se almacenan en nuevas columnas y archivos procesados.
-
-## Estructura del repositorio
-
-```text
-Investigacion/
-├── data/
-│   ├── raw/
-│   ├── interim/
-│   └── processed/
-│       ├── geminidas_v1/
-│       │   └── metadata/
-│       └── geminidas_modelado_v1/
-│           └── metadata/
-│
-├── notebooks/
-│   ├── 01_auditoria_y_limpieza.ipynb
-│   ├── 02_integracion_multianual.ipynb
-│   ├── 03_preparacion_fisica_geminidas.ipynb
-│   └── 04_preparacion_modelado_geminidas.ipynb
-│
-├── references/
-├── reports/
-│   ├── figures/
-│   └── tables/
-│
-├── src/
-├── README.md
-├── pyproject.toml
-└── uv.lock
-```
-
-## Carpetas
-
-### `data/raw/`
-
-Contiene los archivos originales descargados de GMN, separados por año.
-
-Estos archivos son la fuente primaria del proyecto y no se modifican. Cualquier limpieza o transformación se realiza sobre copias.
-
-### `data/interim/`
-
-Contiene productos intermedios generados durante la integración de los archivos anuales.
-
-Su función es separar los datos originales de las bases que ya fueron homologadas, combinadas o parcialmente transformadas.
-
-### `data/processed/geminidas_v1/`
-
-Contiene las bases físicas generadas después de seleccionar las Gemínidas, corregir su deriva temporal y calcular las variables necesarias para estudiar el radiante y el brillo.
-
-Incluye tres productos principales:
-
-- **Base maestra completa:** conserva las columnas originales y todas las variables derivadas.
-- **Base estándar de análisis:** contiene las variables relevantes de las 19,079 trayectorias pertenecientes a la muestra principal.
-- **Base estricta de análisis:** contiene 7,040 trayectorias que también cumplen criterios adicionales de calidad.
-
-La muestra estricta es un subconjunto de la muestra estándar. Se utiliza para comprobar si los resultados se conservan al trabajar con observaciones de mayor calidad.
-
-### `data/processed/geminidas_modelado_v1/`
-
-Contiene las bases preparadas específicamente para PCA y machine learning.
-
-Incluye:
-
-- **Base completa de modelado:** contiene todas las trayectorias y su partición temporal.
-- **Base de entrenamiento:** contiene las observaciones de 2019 a 2024.
-- **Base de prueba:** contiene exclusivamente las observaciones de 2025.
-
-La base de entrenamiento contiene 12,904 trayectorias y la base de prueba contiene 6,175.
-
-La separación por años permite evaluar si los patrones aprendidos con observaciones anteriores se mantienen en un año que no participó en el ajuste.
-
-### Carpetas `metadata/`
-
-Cada conjunto procesado incluye una carpeta de metadatos.
-
-Estas carpetas contienen:
-
-- Diccionarios de variables.
-- Descripciones de las bases.
-- Parámetros empleados en las transformaciones.
-- Resúmenes de las particiones.
-- Auditorías de consistencia.
-- Verificaciones de los archivos guardados.
-- Manifiestos con tamaños y hashes SHA-256.
-
-Los metadatos permiten interpretar las columnas y verificar que los archivos compartidos no hayan sido alterados.
-
-### `notebooks/`
-
-Contiene el código principal del proyecto organizado en el orden en que se desarrolló el procesamiento.
-
-Los notebooks son consecutivos: cada uno utiliza los datos o resultados generados por las etapas anteriores.
-
-### `references/`
-
-Contiene documentación externa necesaria para interpretar las columnas originales, principalmente el diccionario de variables de GMN.
-
-### `reports/figures/`
-
-Está destinada a las figuras finales del PCA, los modelos y el artículo.
-
-No contiene las gráficas exploratorias producidas durante el desarrollo, salvo que posteriormente se seleccionen como resultados definitivos.
-
-### `reports/tables/`
-
-Está destinada a las tablas finales de resultados, métricas, cargas del PCA y resúmenes utilizados en el artículo.
-
-### `src/`
-
-Está reservada para funciones reutilizables que posteriormente puedan extraerse de los notebooks.
-
-Actualmente, la mayor parte del código se encuentra directamente en los notebooks.
-
-### `pyproject.toml`
-
-Define el proyecto de Python y sus dependencias principales.
-
-### `uv.lock`
-
-Registra las versiones exactas de las dependencias utilizadas. Su función es permitir que los integrantes trabajen con el mismo entorno y evitar diferencias causadas por versiones distintas de las bibliotecas.
-
-## Notebooks
-
-### `01_auditoria_y_limpieza.ipynb`
-
-Este notebook examina la estructura de los archivos originales antes de realizar transformaciones físicas.
-
-Revisa:
-
-- Número de filas y columnas.
-- Nombres y tipos de variables.
-- Valores faltantes y no finitos.
-- Registros duplicados.
-- Identificadores de trayectoria.
-- Códigos de lluvia.
-- Variables de calidad e incertidumbre.
-- Rangos de las variables físicas.
-
-También define y valida los criterios utilizados para distinguir entre la muestra estándar y la muestra estricta.
-
-Su resultado es una evaluación documentada de la calidad de los datos y de las observaciones que pueden utilizarse en las etapas posteriores.
-
-### `02_integracion_multianual.ipynb`
-
-Este notebook combina los archivos correspondientes a diciembre de 2019, 2020, 2021, 2022, 2023, 2024 y 2025.
-
-Antes de unirlos:
-
-- Comprueba que las columnas sean compatibles.
-- Homologa nombres y tipos de datos.
-- Conserva el origen de cada registro.
-- Agrega la variable `source_year`.
-- Revisa que no se pierdan filas.
-- Comprueba los identificadores.
-
-Su resultado es una base multianual con una fila por trayectoria y una estructura común para todos los años.
-
-### `03_preparacion_fisica_geminidas.ipynb`
-
-Este notebook construye las variables físicas utilizadas en el análisis.
-
-Primero selecciona las trayectorias clasificadas como Gemínidas y genera:
-
-- La muestra estándar.
-- La muestra estricta.
-
-Posteriormente:
-
-- Transforma las coordenadas del radiante.
-- Calcula la longitud eclíptica centrada en el Sol.
-- Representa las direcciones mediante vectores unitarios.
-- Modela el desplazamiento temporal del radiante.
-- Modela la evolución de la velocidad geocéntrica.
-- Calcula un centro esperado para cada trayectoria.
-- Construye una base tangente alrededor de ese centro.
-- Calcula residuos longitudinales y latitudinales.
-- Calcula la distancia angular al centro esperado.
-- Calcula el residuo de velocidad geocéntrica.
-
-El notebook también prepara la información fotométrica:
-
-- Conserva la magnitud original.
-- Identifica valores fotométricos sospechosos.
-- Crea una magnitud utilizable para análisis.
-- Construye grupos descriptivos de brillo.
-- Examina la altura del máximo de brillo.
-- Revisa sesgos relacionados con año, fase solar y calidad observacional.
-
-Finalmente, genera las bases físicas de `geminidas_v1/` y sus metadatos.
-
-### `04_preparacion_modelado_geminidas.ipynb`
-
-Este notebook transforma la base física en una base destinada al PCA y al modelo de clasificación.
-
-Primero separa las observaciones en:
-
-- Entrenamiento: 2019–2024.
-- Prueba temporal: 2025.
-
-Después vuelve a ajustar las referencias físicas utilizando exclusivamente el entrenamiento. Esto evita que las observaciones de 2025 influyan en las variables que posteriormente se utilizarán para evaluarlas.
-
-El notebook:
-
-- Calcula los centros esperados de entrenamiento y prueba.
-- Construye los vectores observados y esperados de velocidad.
-- Calcula las componentes cartesianas del vector residual.
-- Verifica las normas de los vectores.
-- Cuenta el número de estaciones participantes.
-- Prepara las variables de calidad observacional.
-- Trata los valores de incertidumbre iguales a cero.
-- Define las clases de brillo.
-- Marca las observaciones utilizables para PCA.
-- Marca las observaciones utilizables para machine learning.
-- Genera las bases de entrenamiento y prueba.
-
-También guarda la configuración del modelado, los parámetros del centro, los diccionarios de variables y las auditorías correspondientes.
-
-## Principales variables derivadas
-
-| Variable | Descripción |
-|---|---|
-| `id_fila_origen` | Identificador que permite relacionar cada fila procesada con su trayectoria de origen. |
-| `source_year` | Año del archivo del que proviene la trayectoria. |
-| `delta_sol_lon_deg` | Longitud solar relativa al valor de referencia utilizado para estudiar la actividad de las Gemínidas. |
-| `lambda_sce_deg` | Longitud eclíptica del radiante expresada en un sistema centrado en el Sol. |
-| `lambda_sce_esperada_deg` | Longitud esperada del centro de la lluvia. |
-| `beta_esperada_deg` | Latitud esperada del centro de la lluvia. |
-| `vgeo_esperada_km_s` | Velocidad geocéntrica esperada para la fase de actividad. |
-| `residuo_lambda_coordenada_deg` | Desplazamiento longitudinal respecto al centro esperado. |
-| `residuo_beta_coordenada_deg` | Desplazamiento latitudinal respecto al centro esperado. |
-| `distancia_angular_centro_deg` | Separación angular entre el radiante observado y el esperado. |
-| `residuo_vgeo_km_s` | Diferencia entre la rapidez observada y la esperada. |
-| `delta_v_x_km_s` | Componente cartesiana \(x\) del vector residual de velocidad. |
-| `delta_v_y_km_s` | Componente cartesiana \(y\) del vector residual de velocidad. |
-| `delta_v_z_km_s` | Componente cartesiana \(z\) del vector residual de velocidad. |
-| `norma_delta_v_km_s` | Magnitud del vector residual de velocidad. |
-| `magnitud_analisis` | Magnitud de pico después de excluir valores fotométricos sospechosos. |
-| `fotometria_utilizable` | Indica si la magnitud puede emplearse en el análisis. |
-| `grupo_magnitud` | Grupo descriptivo de brillo asignado a la trayectoria. |
-| `clase_brillo_ml` | Clase binaria utilizada por el modelo de clasificación. |
-| `particion_modelado` | Indica si la fila pertenece a entrenamiento o prueba. |
-| `usar_pca` | Indica si la trayectoria contiene las variables requeridas por el PCA. |
-| `usar_ml` | Indica si la trayectoria puede utilizarse en el modelo de clasificación. |
-| `numero_estaciones` | Número de estaciones que participaron en la reconstrucción. |
-| `sigma_radiante_aprox` | Medida aproximada de la incertidumbre angular del radiante. |
-| `Vgeo_sigma_modelo` | Incertidumbre de velocidad preparada para utilizarse como control en el modelo. |
-
-La definición completa de las variables se encuentra en los diccionarios almacenados dentro de las carpetas `metadata/`.
-
-## Archivos procesados principales
-
-### `geminidas_v1`
-
-```text
-geminidas_base_maestra_completa_v1.parquet
-geminidas_estandar_analisis_v1.parquet
-geminidas_estandar_analisis_v1.csv
-geminidas_estricta_analisis_v1.parquet
-geminidas_estricta_analisis_v1.csv
-```
-
-La base maestra conserva todas las variables originales y derivadas. Las vistas estándar y estricta contienen una selección documentada de las columnas necesarias para los análisis físicos.
-
-### `geminidas_modelado_v1`
-
-```text
-geminidas_modelado_completo_v1.parquet
-geminidas_modelado_entrenamiento_2019_2024_v1.parquet
-geminidas_modelado_entrenamiento_2019_2024_v1.csv
-geminidas_modelado_prueba_2025_v1.parquet
-geminidas_modelado_prueba_2025_v1.csv
-```
-
-La base completa conserva todas las trayectorias preparadas para modelado. Las otras bases separan físicamente el entrenamiento y la prueba temporal.
-
-Los archivos Parquet son la versión principal porque conservan mejor los tipos de datos. Los archivos CSV son copias portables para inspección e intercambio.
+El proyecto estudia si la dispersión angular del radiante y la cinemática residual contienen información asociada con el brillo observado, después de corregir la evolución temporal de la lluvia y considerar la calidad de las observaciones.
 
 ## Estado del proyecto
 
-Se encuentran terminadas:
+El pipeline principal está compuesto por siete notebooks auditados para ejecutarse secuencialmente:
 
-- La auditoría inicial.
-- La integración multianual.
-- La selección de las Gemínidas.
-- La preparación de coordenadas.
-- La corrección de la deriva temporal.
-- El cálculo de residuos físicos.
-- La preparación de la magnitud.
-- La auditoría de sesgos.
-- La construcción de bases portables.
-- La separación entre entrenamiento y prueba.
-- La preparación inicial de variables para PCA y machine learning.
+```text
+01 → 02 → 03 → 04 → 05 → 06 → 07
+```
 
-Se encuentran pendientes:
+Los archivos originales de datos, las bases procesadas y los resultados generados no se almacenan en Git. Se reconstruyen localmente mediante los notebooks.
 
-- La transformación del vector residual a componentes físicas locales.
-- El PCA cinemático definitivo.
-- El modelo de clasificación.
-- La evaluación temporal con 2025.
-- La generación de figuras y tablas finales.
-- La redacción del artículo.
+---
 
-## Herramientas utilizadas
+## 1. Requisitos
 
-El proyecto fue desarrollado con Python y Jupyter.
+Se recomienda tener instalado:
 
-Las principales bibliotecas utilizadas son:
+- Git
+- `uv`
+- VS Code con soporte para Jupyter, o Jupyter Lab
 
-- pandas
-- NumPy
-- SciPy
-- Matplotlib
-- seaborn
-- statsmodels
-- scikit-learn
-- PyArrow
+El proyecto utiliza **Python 3.13**.
 
-Las dependencias y sus versiones se encuentran definidas en `pyproject.toml` y `uv.lock`.
+Las dependencias están definidas en:
+
+```text
+pyproject.toml
+uv.lock
+```
+
+No es necesario instalar manualmente cada librería.
+
+---
+
+## 2. Clonar el repositorio
+
+```bash
+git clone https://github.com/AlexBytes-23/Investigacion_geminidas.git
+cd Investigacion_geminidas
+```
+
+---
+
+## 3. Instalar `uv`
+
+### Windows PowerShell
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+### macOS / Linux
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Comprobar la instalación:
+
+```bash
+uv --version
+```
+
+---
+
+## 4. Preparar el entorno
+
+Desde la raíz del repositorio:
+
+```bash
+uv python install 3.13
+uv sync --frozen
+```
+
+El entorno virtual queda en:
+
+```text
+.venv/
+```
+
+Comprobar que las dependencias principales funcionan:
+
+```bash
+uv run python -c "import numpy, pandas, pyarrow, sklearn, statsmodels, matplotlib, joblib; print('Entorno OK')"
+```
+
+Comprobar la versión de Python:
+
+```bash
+uv run python --version
+```
+
+El proyecto está preparado para Python 3.13.
+
+---
+
+## 5. Descargar los datos originales de GMN
+
+Los archivos originales no se almacenan en Git debido a su tamaño.
+
+Fuente oficial:
+
+https://globalmeteornetwork.org/data/traj_summary_data/monthly/
+
+Descargar los siguientes siete archivos **sin cambiar sus nombres**:
+
+```text
+traj_summary_monthly_201912.txt
+traj_summary_monthly_202012.txt
+traj_summary_monthly_202112.txt
+traj_summary_monthly_202212.txt
+traj_summary_monthly_202312.txt
+traj_summary_monthly_202412.txt
+traj_summary_monthly_202512.txt
+```
+
+Colocarlos en:
+
+```text
+data/raw/
+```
+
+La estructura debe verse así:
+
+```text
+data/
+├── raw/
+│   ├── traj_summary_monthly_201912.txt
+│   ├── traj_summary_monthly_202012.txt
+│   ├── traj_summary_monthly_202112.txt
+│   ├── traj_summary_monthly_202212.txt
+│   ├── traj_summary_monthly_202312.txt
+│   ├── traj_summary_monthly_202412.txt
+│   └── traj_summary_monthly_202512.txt
+├── interim/
+└── processed/
+```
+
+### Integridad de los datos
+
+GMN puede actualizar archivos históricos.
+
+El archivo:
+
+```text
+references/manifiesto_datos_gmn.csv
+```
+
+contiene el nombre, tamaño y SHA-256 de los siete archivos utilizados en la ejecución auditada del proyecto.
+
+Una descarga posterior puede permitir ejecutar correctamente el pipeline sin ser necesariamente idéntica byte por byte a la utilizada para obtener los resultados originales.
+
+---
+
+## 6. Ejecutar los notebooks
+
+Los notebooks deben ejecutarse en orden.
+
+Para una ejecución reproducible:
+
+1. Seleccionar como kernel el Python de `.venv`.
+2. Reiniciar el kernel.
+3. Ejecutar todas las celdas desde el inicio.
+4. No continuar al siguiente notebook si aparece un error.
+
+### 01 — Auditoría inicial y criterios de calidad
+
+```text
+notebooks/01_auditoria_y_limpieza.ipynb
+```
+
+Examina diciembre de 2019 para comprender la estructura de los datos GMN, revisar incertidumbres, detectar problemas de calidad y justificar los criterios utilizados posteriormente.
+
+Es un notebook diagnóstico: no produce directamente la entrada del notebook 02.
+
+### 02 — Integración multianual
+
+```text
+notebooks/02_integracion_multianual.ipynb
+```
+
+Carga y homogeneiza los archivos de diciembre de 2019 a 2025.
+
+Genera la base multianual:
+
+```text
+data/interim/gmn_diciembre_2019_2025.parquet
+```
+
+### 03 — Preparación física de las Gemínidas
+
+```text
+notebooks/03_preparacion_fisica_geminidas.ipynb
+```
+
+Selecciona las Gemínidas y desarrolla el análisis físico descriptivo.
+
+Incluye:
+
+- coordenadas relativas al Sol;
+- fase solar;
+- deriva del radiante y de la velocidad;
+- construcción del centro descriptivo;
+- residuos angulares;
+- análisis de la fotometría;
+- calidad observacional;
+- relación entre brillo y dispersión.
+
+Genera:
+
+```text
+data/processed/geminidas_v1/
+```
+
+### 04 — Preparación para PCA y aprendizaje automático
+
+```text
+notebooks/04_preparacion_modelado_pca_ml.ipynb
+```
+
+Separa temporalmente los datos:
+
+```text
+2019–2024 → desarrollo
+2025      → prueba
+```
+
+La referencia física utilizada para el modelado se ajusta únicamente con 2019–2024.
+
+Después se construye el vector residual de velocidad y se proyecta sobre una base física local formada por tres componentes:
+
+```text
+paralela
+lambda
+beta
+```
+
+Genera:
+
+```text
+data/processed/geminidas_modelado_v2/
+```
+
+con las bases de entrenamiento y prueba.
+
+### 05 — Análisis de componentes principales
+
+```text
+notebooks/05_pca.ipynb
+```
+
+Ajusta un PCA utilizando las tres componentes locales de velocidad residual de 2019–2024.
+
+El brillo no interviene en la construcción de los ejes PCA. Después del ajuste se compara cómo se distribuyen los distintos grupos de brillo sobre esos mismos ejes.
+
+Las tablas y figuras generadas se guardan en:
+
+```text
+reports/tables/
+reports/figures/
+```
+
+### 06 — Desarrollo y selección de modelos
+
+```text
+notebooks/06_modelo_ml_geminidas.ipynb
+```
+
+Utiliza únicamente información de 2019–2024.
+
+Compara siete modelos mediante validación temporal creciente, incluyendo:
+
+- modelo de control;
+- cinemática local lineal;
+- cinemática local cuadrática;
+- modelos reducidos mediante PCA.
+
+Después selecciona y ajusta los modelos finales con todo el periodo 2019–2024.
+
+Genera:
+
+```text
+configs/protocolo_ml_pre2025.json
+reports/models/modelos_pre2025.joblib
+```
+
+El protocolo registra las decisiones metodológicas previas a la evaluación de 2025 e incluye la huella SHA-256 del archivo de modelos.
+
+### 07 — Evaluación temporal de 2025
+
+```text
+notebooks/07_evaluacion_2025.ipynb
+```
+
+Carga el protocolo y los modelos congelados y evalúa la partición reservada de 2025.
+
+No reajusta modelos ni transformaciones utilizando 2025.
+
+Calcula:
+
+- ROC-AUC;
+- Average Precision;
+- exactitud balanceada;
+- análisis de sensibilidad;
+- matrices de confusión;
+- bootstrap pareado de las diferencias;
+- dependencia temporal por noche;
+- coeficientes del modelo principal.
+
+También genera las figuras finales de evaluación.
+
+---
+
+## 7. Flujo principal de datos
+
+```text
+Archivos GMN 2019–2025
+        │
+        ▼
+data/raw/
+        │
+        ▼
+02 Integración multianual
+        │
+        ▼
+data/interim/gmn_diciembre_2019_2025.parquet
+        │
+        ▼
+03 Preparación física
+        │
+        ▼
+data/processed/geminidas_v1/
+        │
+        ▼
+04 Preparación de modelado
+        │
+        ▼
+data/processed/geminidas_modelado_v2/
+        │
+        ├──────────► 05 PCA
+        │
+        └──────────► 06 Desarrollo ML
+                          │
+                          ▼
+                   modelos pre-2025
+                          │
+                          ▼
+                   07 Evaluación 2025
+```
+
+El notebook 01 aparece al inicio porque documenta y justifica los criterios utilizados posteriormente, aunque no genera directamente la entrada del notebook 02.
+
+---
+
+## 8. Resultados generados
+
+Los productos del análisis se escriben localmente en:
+
+```text
+reports/
+├── figures/
+├── models/
+└── tables/
+```
+
+Estos archivos no se almacenan normalmente en Git porque pueden regenerarse ejecutando el pipeline.
+
+Entre los productos se encuentran:
+
+- parámetros y puntuaciones del PCA;
+- tablas de validación interna;
+- estabilidad de coeficientes;
+- predicciones individuales de 2025;
+- métricas externas;
+- intervalos bootstrap;
+- matrices de confusión;
+- curvas ROC;
+- curvas precisión–exhaustividad;
+- manifiestos de integridad.
+
+---
+
+## 9. Estructura del repositorio
+
+```text
+configs/        configuración metodológica
+data/raw/       archivos originales de GMN
+data/interim/   productos intermedios
+data/processed/ bases derivadas del proyecto
+notebooks/      pipeline principal 01–07
+references/     documentación y manifiestos de datos
+reports/        resultados generados
+src/            funciones reutilizables
+```
+
+Los datos y resultados generados están excluidos mediante `.gitignore`.
+
+---
+
+## 10. Reproducibilidad
+
+Para comprobar el pipeline desde una instalación nueva:
+
+1. Clonar el repositorio.
+2. Ejecutar `uv sync --frozen`.
+3. Colocar únicamente los siete archivos originales de GMN en `data/raw/`.
+4. Verificar, si se desea una reproducción exacta, sus SHA-256 contra `references/manifiesto_datos_gmn.csv`.
+5. Ejecutar los notebooks 01 → 07 en orden.
+
+Durante esta prueba no deben reutilizarse bases procesadas, modelos ni resultados obtenidos en otra instalación.
+
+---
+
+## 11. Fuente de los datos
+
+Global Meteor Network:
+
+https://globalmeteornetwork.org/
+
+Archivos mensuales de trayectorias:
+
+https://globalmeteornetwork.org/data/traj_summary_data/monthly/
+
+Descripción de las columnas utilizadas:
+
+```text
+references/GMN_orbit_data_columns.pdf
+```
+
+Los datos de Global Meteor Network deben citarse conforme a las condiciones de atribución correspondientes.

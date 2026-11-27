@@ -1,8 +1,0 @@
-anio,filas_originales,filas_integradas,filas_coinciden,calidad_incompleta,geminidas_totales,geminidas_estandar,retencion_estandar_gem_porcentaje,geminidas_estrictas,retencion_estricta_gem_porcentaje
-2019,11143,11143,True,0,2117,443,20.93,99,4.68
-2020,17829,17829,True,0,5959,1051,17.64,191,3.21
-2021,33059,33059,True,0,9968,2023,20.29,322,3.23
-2022,45785,45785,True,59,15800,3769,23.85,1776,11.24
-2023,67520,67520,True,87,19655,3538,18.0,1335,6.79
-2024,89364,89364,True,292,13814,2622,18.98,621,4.5
-2025,118046,118046,True,383,37365,6312,16.89,2924,7.83

@@ -1,20 +1,35 @@
-# Entorno de Python
+﻿# Entorno de Python
 .venv/
 __pycache__/
 *.pyc
 
-# Archivos temporales de Jupyter
+# Jupyter
 .ipynb_checkpoints/
 
-# Archivos de macOS
+# Sistema operativo
 .DS_Store
+Thumbs.db
 
-# Datos, generalmente demasiado grandes para Git
+# Datos
 data/raw/*
 data/interim/*
 data/processed/*
 
-# Conservar las carpetas vacías
+# Conservar la estructura de carpetas
 !data/raw/.gitkeep
 !data/interim/.gitkeep
 !data/processed/.gitkeep
+
+# Resultados generados
+reports/figures/*
+reports/tables/*
+reports/models/*
+
+# Conservar las carpetas de resultados
+!reports/figures/.gitkeep
+!reports/tables/.gitkeep
+!reports/models/.gitkeep
+
+# Archivos temporales de auditoría
+archivos_trackeados.txt
+estructura_repo.txt
