@@ -1,26 +1,20 @@
-[project]
-name = "investigacion"
+﻿[project]
+name = "investigacion-geminidas"
 version = "0.1.0"
-description = "Add your description here"
+description = "Análisis físico, PCA y modelado predictivo del brillo de las Gemínidas con datos de Global Meteor Network."
 authors = [
-    { name = "Alex", email = "alexgarcia10062016@gmail.com" }
+    { name = "Alex" }
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.13,<3.14"
+
 dependencies = [
     "ipykernel>=7.4.0",
+    "joblib>=1.5.0",
     "jupyter>=1.1.1",
     "matplotlib>=3.11.2",
-    "numpy>=2.5.4",
-    "pandas>=3.1.1",
+    "numpy>=2.3.4",
+    "pandas>=3.0.1",
     "pyarrow>=26.0.1",
     "scikit-learn>=1.9.1",
-    "seaborn>=0.13.2",
     "statsmodels>=0.15.0",
 ]
-
-[project.scripts]
-investigacion = "investigacion:main"
-
-[build-system]
-requires = ["uv_build>=0.13.7,<0.14.0"]
-build-backend = "uv_build"
